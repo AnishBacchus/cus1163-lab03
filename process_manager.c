@@ -17,11 +17,7 @@ int run_basic_demo(void) {
      if (pipe(pipe_fd) == -1) {
         perror("pipe");
         return -1;
-     }
-
-	 close(pipe_fd[0]);
-	 write(pipe_fd[1]);
-	 close(pipe_fd[1]);	
+     }	
 
 
     // TODO 2: Fork the producer process
