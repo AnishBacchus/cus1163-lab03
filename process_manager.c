@@ -89,13 +89,53 @@ int run_multiple_pairs(int num_pairs) {
     //   - Parent closes both pipe ends
     //   - Print "=== Pair %d ===" for each pair
 
+	for(int i = 0; i < num_pairs; i++){
+	int pipe_fd[2];
+
+	if(pipe(pipe_fd) == -1){
+	perror("Error");
+	return -1;
+	}
+
+	pid_t producer_pid = fork();
+	
+	if(producer_pid == 0){
+        close(pipe_fd[0]);
+        producer_process(pipe_fd[1], i * 5 + 1);
+        close(pipe_fd[1]);
+        exit(0);
+        }
+	
+	pids[pid_count++] = producer_pid;
+
+	pid_t consumer_pid = fork();
+	
+	if(consumer_pid == 0){
+        close(pipe_fd[1]);
+        producer_process(pipe_fd[0], i + 1);
+        close(pipe_fd[0]);
+        exit(0);
+        }
+
+	pids[pid_count++] = consumer_pid;
+
+	close(pipe_fd[0]);
+	close(pipe_fd[1]);
+	}
+
 
     // TODO 6: Wait for all children
     // HINT: Use a for loop to wait for all PIDs in the pids array
     // Print exit status for each child
+	int status;
+
+	for(int i = 0; pid_count; i++){
+	waitpid(pids[i], &status, 0);
+	printf("Child %d exited with status %d\n", pids[1], status);
+	}
     printf("\nAll pairs completed successfully!\n");
 
-    
+	    
     return 0;
 }
 
