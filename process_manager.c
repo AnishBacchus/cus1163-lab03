@@ -13,10 +13,15 @@ int run_basic_demo(void) {
     
     // TODO 1: Create a pipe for communication
     // HINT: Use pipe(pipe_fd), check return value
-    // if (pipe(pipe_fd) == -1) {
-    //     perror("pipe");
-    //     return -1;
-    // }
+
+     if (pipe(pipe_fd) == -1) {
+        perror("pipe");
+        return -1;
+     }
+
+	 close(pipe_fd[0]);
+	 write(pipe_fd[1]);
+	 close(pipe_fd[1]);	
 
 
     // TODO 2: Fork the producer process
@@ -25,6 +30,14 @@ int run_basic_demo(void) {
     // Child must close pipe_fd[0] (read end)
     // Parent prints: "Created producer child (PID: %d)"
 
+	producer_pid = fork();
+
+	if(producer_pid == 0){
+	close(pipe_fd[0]);
+	producer_process(pipe_fd[1], 1);
+	close(pipe_fd[1]);
+	exit(0);
+	}
 
     // TODO 3: Fork the consumer process
     // HINT: consumer_pid = fork();
@@ -32,12 +45,29 @@ int run_basic_demo(void) {
     // Child must close pipe_fd[1] (write end)
     // Parent prints: "Created consumer child (PID: %d)"
 
+	consumer_pid = fork();
+
+	if(consumer_pid == 0){
+	close(pipe_fd[1]);
+	producer_process(pipe_fd[0], 0);
+	close(pipe_fd[0]);
+	exit(0);
+	}
+	
 
     // TODO 4: Parent cleanup - close pipe ends and wait for children
     // HINT: close(pipe_fd[0]); close(pipe_fd[1]);
     // Use waitpid() twice to wait for both specific children
     // Print exit status for each child
 
+	close(pipe_fd[0]);
+	close(pipe_fd[1]);
+	
+	pid_t child1 = waitpid(producer_pid, &status, 0);
+	printf("Child %d exited with status %d\n", child1, status);
+
+	pid_t child2 = waitpid(consumer_pid, &status, 0);
+	printf("Child %d exited with status %d\n", child2, status);
 
     return 0;
 }
