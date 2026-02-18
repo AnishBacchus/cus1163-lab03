@@ -45,7 +45,7 @@ int run_basic_demo(void) {
 
 	if(consumer_pid == 0){
 	close(pipe_fd[1]);
-	producer_process(pipe_fd[0], 0);
+	consumer_process(pipe_fd[0], 0);
 	close(pipe_fd[0]);
 	exit(0);
 	}
@@ -112,7 +112,7 @@ int run_multiple_pairs(int num_pairs) {
 	
 	if(consumer_pid == 0){
         close(pipe_fd[1]);
-        producer_process(pipe_fd[0], i + 1);
+        consumer_process(pipe_fd[0], i + 1);
         close(pipe_fd[0]);
         exit(0);
         }
@@ -129,7 +129,7 @@ int run_multiple_pairs(int num_pairs) {
     // Print exit status for each child
 	int status;
 
-	for(int i = 0; pid_count; i++){
+	for(int i = 0; i < pid_count; i++){
 	waitpid(pids[i], &status, 0);
 	printf("Child %d exited with status %d\n", pids[1], status);
 	}
